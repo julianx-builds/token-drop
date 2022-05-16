@@ -7,8 +7,7 @@ Token drop is a tool for businesses operating on Cardano looking to finish off a
 * The sumbition of those TXs onto the cardano chain. Will require a cardano node running, unless I can find a way to submit them through an API :)
 
 ## Installation
-Clone the repository: `git clone https://github.com/julianx-builds/token-drop`
-TODO
+`git clone https://github.com/julianx-builds/token-drop`
 
 ## Requirements
 Python version is >=3.6
