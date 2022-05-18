@@ -19,18 +19,20 @@ def populateMessyDB(sqlManager):
     # Error checking
     if EPOCH_MIN == -1 or EPOCH_MAX == -1:
         print("ERROR: ADD VALUE TO EPOCH_MIN/EPOCH_MAX VARIABLE IN populateDB.py")
-        sqlManager.endSQL()
-        quit()
+        return 1
     elif EPOCH_MIN > EPOCH_MAX:
         print("ERROR: EPOCH MIN IS GREATER THAN EPOCH_MAX IN populateDB.py")
-        sqlManager.endSQL()
-        quit()
+        return 1
     else:
         #Populating messy with API queries
         if EPOCH_MIN == EPOCH_MAX: #If user only wants one epoch
             print("INFO: EPOCH_MIN and EPOCH_MAX are equal. Guessing you only want to do one epoch then.")
             
             response = requests.get(f"https://api.koios.rest/api/v0/pool_delegators?_pool_bech32={POOLID}&_epoch_no={EPOCH_MIN}").json()
+            
+            if len(response) == 0:
+                    print("ERROR: POOLID INCORRECT OR NO DELEGATES FOUND FOR EPOCH BETWEEN MAX AND MIN")
+                    return 1
             
             for delegation in response:
                 query = f'''INSERT INTO messy(stakeID, epoch, amount) VALUES('{delegation['stake_address']}', 
@@ -44,7 +46,11 @@ def populateMessyDB(sqlManager):
             
             while epoch_count <= EPOCH_MAX:
                 response = requests.get(f"https://api.koios.rest/api/v0/pool_delegators?_pool_bech32={POOLID}&_epoch_no={epoch_count}").json()
-            
+                
+                if len(response) == 0:
+                    print("ERROR: POOLID INCORRECT OR NO DELEGATES FOUND FOR EPOCH BETWEEN MAX AND MIN")
+                    return 1
+                
                 for delegation in response:
                     query = f'''INSERT INTO messy(stakeID, epoch, amount) VALUES('{delegation['stake_address']}', 
                                 {delegation['epoch_no']},
@@ -53,6 +59,8 @@ def populateMessyDB(sqlManager):
                 print(f"INFO: Epoch {epoch_count} delegates populated")
                 epoch_count+=1
             print("INFO: Messy table fully populated")
+            
+        return 0
             
 def populateCalculationDB(sqlManager):
     query = '''SELECT stakeID, sum(amount) as TotalAmount from messy GROUP BY stakeID;'''
@@ -67,10 +75,16 @@ def populateCalculationDB(sqlManager):
         sqlManager.executeQuery(query)
     print("INFO: Calculation table populated")
     
+    return 0
+    
 
 sqlManager = SQLManager()
-populateMessyDB(sqlManager)
-populateCalculationDB(sqlManager)
 
-sqlManager.endSQL()
+if populateMessyDB(sqlManager) == 0 and populateCalculationDB(sqlManager) == 0:
+    print("INFO: ISPO data collected!")
+    sqlManager.endSQL()
+else:
+    print("ERROR OCCURED")
+    sqlManager.noSave()
+
 del sqlManager
