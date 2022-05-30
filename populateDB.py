@@ -1,19 +1,15 @@
+import os
 import requests
 from sqlManager import SQLManager
+from dotenv import load_dotenv
 
-################################################################
-#################### USER VARIABLES  ###########################
-################################################################
-POOLID = "" #Bech32 format. Should start with "pool"....
-EPOCH_MIN = -1 #The first epoch included in stake calculations
-EPOCH_MAX = -1 #The last epoch included in stake calculations.
-               #If epoch_max is 320, it will scan the delegations
-               #of epoch 320, but not 321.
-RATE = 0.2 #The rate that tokens will be allocated, per ADA.
-           #For example, if a user choses a rate of 0.2, a delegate
-           #will earn 0.2 of token "X" per ADA, per Epoch.
-################################################################
-################################################################
+load_dotenv()
+
+POOLID = os.getenv('POOLID')
+EPOCH_MIN = int(os.getenv('EPOCH_MIN'))
+EPOCH_MAX = int(os.getenv('EPOCH_MAX')) 
+RATE = float(os.getenv('RATE')) 
+
                              
 def populateMessyDB(sqlManager):
     # Error checking
@@ -48,15 +44,15 @@ def populateMessyDB(sqlManager):
                 response = requests.get(f"https://api.koios.rest/api/v0/pool_delegators?_pool_bech32={POOLID}&_epoch_no={epoch_count}").json()
                 
                 if len(response) == 0:
-                    print("ERROR: POOLID INCORRECT OR NO DELEGATES FOUND FOR EPOCH BETWEEN MAX AND MIN")
-                    return 1
+                    print(f"WARNING: POOLID INCORRECT OR NO DELEGATES FOUND FOR EPOCH {epoch_count}")
                 
-                for delegation in response:
-                    query = f'''INSERT INTO messy(stakeID, epoch, amount) VALUES('{delegation['stake_address']}', 
-                                {delegation['epoch_no']},
-                                {delegation['amount']});'''
-                    sqlManager.executeQuery(query)
-                print(f"INFO: Epoch {epoch_count} delegates populated")
+                else:
+                    for delegation in response:
+                        query = f'''INSERT INTO messy(stakeID, epoch, amount) VALUES('{delegation['stake_address']}', 
+                                    {delegation['epoch_no']},
+                                    {delegation['amount']});'''
+                        sqlManager.executeQuery(query)
+                    print(f"INFO: Epoch {epoch_count} delegates populated")
                 epoch_count+=1
             print("INFO: Messy table fully populated")
             
@@ -88,3 +84,4 @@ else:
     sqlManager.noSave()
 
 del sqlManager
+
