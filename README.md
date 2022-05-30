@@ -14,7 +14,7 @@ Python version is >=3.6
 
 ## Usage
 ### For people looking to finish off ISPOs:
-Edit the USER VARIABLES found at populateDB.py. This will include the poolID (in bech32), epoch_min, epoch_max and rate.
+Edit the USER VARIABLES found at .env including the poolID (in bech32), epoch_min, epoch_max and rate.
 
 Run `python3 populateDB.py`
 
