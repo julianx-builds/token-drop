@@ -55,4 +55,10 @@ class SQLManager:
             self.connection.close()
         except:
             print("ERROR: Could not write to database. Likely being used by another process")
-
+    
+    def noSave(self):
+        try:
+            self.cursor.close()
+            self.connection.close()
+        except:
+            print("ERROR: Could not disconnect to database")
