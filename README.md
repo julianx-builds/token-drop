@@ -21,6 +21,6 @@ Run `python3 populateDB.py`
 ### For people looking to airdrop tokens (Requires a list of Cardano addresses):
 
 ## TODO
-Collect delegation payment tx to find address that payed for delegation
-Implement cardano-mass-payments repo to build TXs
-Automate submitting TXs to chain
+* Collect delegation payment tx to find address that payed for delegation
+* Implement cardano-mass-payments repo to build TXs
+* Automate submitting TXs to chain
